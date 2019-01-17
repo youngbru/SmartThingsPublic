@@ -236,7 +236,7 @@ def setLux(lux) {
 }
 
 /* Added to allow a separate call to set OnTime value */
-def setOnTime(OnTime) {
+def setOnTime(onTime) {
   def cmds = []
     	onTime = Math.max(Math.min(onTime, 720), 8)
 		cmds << zwave.configurationV1.configurationSet(parameterNumber:1, size:2, scaledConfigurationValue: onTime ).format()
