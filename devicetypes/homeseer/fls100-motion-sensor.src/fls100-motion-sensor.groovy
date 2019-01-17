@@ -236,10 +236,10 @@ def setLux(lux) {
 }
 
 /* Added to allow a separate call to set OnTime value */
-def setOnTime(onTime) {
+def setOnTime(onTimeSec) {
   def cmds = []
-    	onTime = Math.max(Math.min(onTime, 720), 8)
-		cmds << zwave.configurationV1.configurationSet(parameterNumber:1, size:2, scaledConfigurationValue: onTime ).format()
+    	onTimeSec = Math.max(Math.min(onTimeSec, 720), 8)
+		cmds << zwave.configurationV1.configurationSet(parameterNumber:1, size:2, scaledConfigurationValue: onTimeSec ).format()
 }
 
 def poll() {
