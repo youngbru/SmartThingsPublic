@@ -24,6 +24,8 @@
  *  Modified by Nate Scwartz to allow WebCore control of Lux setting
  *  Modified by Bruce Young on 12/22/2018 to allow setting of LuxDisableValue to 0 to turn off auto-on from Motion
  *  Modified by Bruce Young (with advice from Nate Schwarz on 1/15/2019 to allow WebCore control of OnTime value
+ *  Modified by Bruce Young to allow WebCore control of Lux Reporting Interval 
+ *  1.0B Modified Version Committed to GitHub on 1/18/2019 
  *
  */
  
@@ -37,8 +39,10 @@ metadata {
         capability "Configuration"
         capability "Illuminance Measurement"
         
+        /*Added to allow SmartApps/WebCoRE to control parameters */
         command "setLux", ["number"]
         command "setOnTime", ["number"]
+        command "setLuxReportTime", ["number"]
         
         fingerprint mfr: "000C", prod: "0201", model: "000B"
 }
@@ -222,8 +226,9 @@ def off() {
 	],5000)
 }
 
-/* Added by Nate Swartz and Modified by Bruce Young to allow a separate call to set lux value */
+/* Added by Nate Swartz and Modified by Bruce Young to allow a separate call to set Lux Sensor Threshold (parameter 2) value */
 def setLux(lux) {
+  log.debug ("setLux")
   def cmds = []
   if (lux == 0) {  /* Disable automatic light turn-on from motion no matter what lux level */
     cmds << zwave.configurationV1.configurationSet(parameterNumber:2, size:2, scaledConfigurationValue: lux ).format()
@@ -235,11 +240,20 @@ def setLux(lux) {
   }
 }
 
-/* Added to allow a separate call to set OnTime value */
+/* Added by Bruce Young to allow a separate call to set Motion Reporting period (parameter 1) value */
 def setOnTime(onTimeSec) {
+  log.debug ("setOnTime")
   def cmds = []
     	onTimeSec = Math.max(Math.min(onTimeSec, 720), 8)
 		cmds << zwave.configurationV1.configurationSet(parameterNumber:1, size:2, scaledConfigurationValue: onTimeSec ).format()
+}
+
+/* Added by Bruce Young to allow a separate call to set Lux Reporting Interval (parameter 3) value */
+def setLuxReportTime(luxReportMin) {
+  log.debug ("setLuxReportTime")
+  def cmds = []
+        luxReportMin - Math.max(Math.min(luxReportMin, 1440), 0)
+		cmds << zwave.configurationV1.configurationSet(parameterNumber:3, size:2, scaledConfigurationValue: luxReportMin).format()
 }
 
 def poll() {
@@ -297,7 +311,7 @@ def setPrefs()
     if (luxDisableValue == 0) { /* Special Case for writing 0 - Added by BAY */
     	cmds << zwave.configurationV1.configurationSet(parameterNumber:2, size:2, scaledConfigurationValue: luxDisableValue ).format()
   	} else { 
-    if (luxDisableValue == 255) { /* Enable automatic light turn-on from motion no matter what lux level */
+    if (luxDisableValue == 255) { /* Enable automatic light turn-on from motion no matter what lux level - Added by BAY */
         cmds << zwave.configurationV1.configurationSet(parameterNumber:2, size:2, scaledConfigurationValue: luxDisableValue ).format()
     } else { 
     if (luxDisableValue) {
